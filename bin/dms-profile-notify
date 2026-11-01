@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+# Profile-switch helper.
+# p5notify now runs as a DMS plugin (see profile-switcher.sh), so the old
+# standalone `qs -c p5notify` shell is no longer started here.
+PROFILE="$1"
+
+# Make sure no leftover standalone instance is running.
+pkill -f "qs -c p5notify" 2>/dev/null
+
+# On persona, clear any stock popups still on screen.
+if [ "$PROFILE" = "persona" ]; then
+    dms ipc call notifications dismissAllPopups 2>/dev/null
+fi
+
+exit 0
