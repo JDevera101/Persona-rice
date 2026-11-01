@@ -53,7 +53,7 @@ font and image you download.
 
 ```
 git clone https://github.com/JDevera101/Persona-rice.git
-cd persona-rice
+cd Persona-rice
 ./install.sh
 ```
 
