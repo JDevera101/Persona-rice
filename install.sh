@@ -7,11 +7,12 @@ here="$(cd "$(dirname "$0")" && pwd)"
 dms_dir="$HOME/.config/dms"
 bak="$dms_dir/backup-$(date +%Y%m%d_%H%M%S)"
 
-for cmd in dms wf-recorder playerctl notify-send; do
+for cmd in dms wf-recorder playerctl notify-send pw-play; do
   command -v "$cmd" >/dev/null || echo "warning: '$cmd' not found (see README requirements)"
 done
 
 mkdir -p "$dms_dir/plugins" "$HOME/.local/bin" "$bak"
+case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) echo "warning: ~/.local/bin is not in your PATH" ;; esac
 
 for p in p5notify personaMusic; do
   if [ -d "$dms_dir/plugins/$p" ]; then
@@ -41,6 +42,7 @@ if [ "$1" = "--mango" ]; then
   fi
   mkdir -p "$HOME/.config/mango"
   cp -r "$here/mango/." "$HOME/.config/mango/"
+  echo "NOTE: edit monitors.conf and outputs.conf in ~/.config/mango for your own displays"
 fi
 
 echo
