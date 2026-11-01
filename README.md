@@ -108,4 +108,4 @@ In the `dmsProfiles` settings, the apply command must be `$HOME/.config/dms/prof
 `~/.local/bin` is not in your PATH. Add it to your shell config, for example `export PATH="$HOME/.local/bin:$PATH"` in `~/.bashrc` or `~/.zshrc`, or `fish_add_path ~/.local/bin` in fish.
 
 **Something else broke**
-Open an issue and include what you ran, the full error text, and the output of `dms --version`.
+Open an issue and include what you ran, the full error text, and the output of `dms version` and `dms doctor`.
