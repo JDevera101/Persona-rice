@@ -83,3 +83,29 @@ Then:
 ## Credits
 
 Built on DankMaterialShell and Quickshell. Persona 5 is owned by Atlus/SEGA.
+
+## Troubleshooting
+
+**The widgets load but look plain**
+The Persona artwork, fonts and sounds are not in this repo. `install.sh` prints a `missing asset:` line for every file it can't find. Add them to the paths listed under "Assets you need to add yourself", then run `dms restart`.
+
+**No P5 banners show up at all**
+- Banners only appear while the active profile is `persona`. Check with `cat ~/.config/dms/p5notify-profile`.
+- Make sure the `p5notify` plugin is enabled in DMS settings, under Plugins.
+- If you run `mako`, `dunst` or `swaync`, stop it so DMS owns notifications (`systemctl --user mask mako.service`), then `dms restart`.
+- Test with `notify-send "Test" "Hello"`.
+
+**The plugin shows a red error in DMS settings**
+Run `dms restart` and look at the terminal output of `dms run` for the exact file and line. Open an issue and paste that line.
+
+**Profile switching does nothing**
+In the `dmsProfiles` settings, the apply command must be `$HOME/.config/dms/profile-switcher.sh`. Your profile slugs must match the `case` in that script (`persona`, `saber`, `elden-ring`), or edit the script to use your own names.
+
+**Wrong resolution, blank or misplaced monitor after `--mango`**
+`monitors.conf` and `outputs.conf` are set for my screens. If you already had these files, the installer keeps yours and saves mine as `.example`. If you didn't, edit them for your own displays.
+
+**`toggle-record.sh` or other helpers say "command not found"**
+`~/.local/bin` is not in your PATH. Add it to your shell config, for example `export PATH="$HOME/.local/bin:$PATH"` in `~/.bashrc` or `~/.zshrc`, or `fish_add_path ~/.local/bin` in fish.
+
+**Something else broke**
+Open an issue and include what you ran, the full error text, and the output of `dms --version`.
