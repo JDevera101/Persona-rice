@@ -25,7 +25,8 @@ PluginComponent {
     // ---- Look & feel (same values as the standalone shell.qml) --------------
     // Banner art used (file inside the plugin folder).
     readonly property string bannerFile: "banner2.png"
-    readonly property real bannerW: 700
+    readonly property real uiScale: 0.8
+    readonly property real bannerW: 700 * uiScale
     readonly property int showSeconds: 6
     readonly property int maxBanners: 5
 
@@ -44,8 +45,8 @@ PluginComponent {
     readonly property real bodyH: 0.30
     readonly property real bodyRot: -1
 
-    readonly property int titleSize: 19
-    readonly property int textSize: 19
+    readonly property int titleSize: Math.round(19 * uiScale)
+    readonly property int textSize: Math.round(19 * uiScale)
 
     // ---- State ---------------------------------------------------------------
     property var seen: ({})
@@ -177,7 +178,7 @@ PluginComponent {
             t = t * 1000; // seconds -> ms
         return Date.now() - t;
     }
-
+    property var liveSeen: ({})
     function scan(initial) {
         var list = NotificationService.historyList;
         if (!list)
@@ -202,6 +203,36 @@ PluginComponent {
             }
             console.log("[p5notify] showing: " + String(n.summary));
             root.show(n);
+        }
+
+        // Catch in-place replacements: the live notification gets new text
+        // under the same id, but no new history entry is created for it.
+        var live = NotificationService.notifications;
+        if (live) {
+            var liveLen = listLength(live);
+            var nextLive = {};
+            for (var m = 0; m < liveLen; ++m) {
+                var w = entryAt(live, m);
+                if (!w || !w.notification)
+                    continue;
+                var wid = String(w.notification.id);
+                var content = String(w.summary) + "|" + String(w.body);
+                nextLive[wid] = content;
+                var prev = root.liveSeen[wid];
+                if (prev !== undefined && prev !== content && !initial && root.personaActive) {
+                    console.log("[p5notify] replaced: " + String(w.summary));
+                    root.show({
+                        "id": w.notification.id,
+                        "timestamp": Date.now(),
+                        "summary": w.summary,
+                        "body": w.body,
+                        "appName": w.appName,
+                        "urgency": w.urgency,
+                        "expireTimeout": w.notification.expireTimeout
+                    });
+                }
+            }
+            root.liveSeen = nextLive;
         }
         // Keep the seen-set from growing forever.
         if (root.seenCount > 1000) {
@@ -262,6 +293,22 @@ PluginComponent {
         var summary = stripMarkup(n.summary);
         var appName = stripMarkup(n.appName);
         var tag = summary !== "" ? summary : (appName !== "" ? appName : "Notification");
+        var bodyText = stripMarkup(n.body);
+        // Browser notifications put the site address on the first line, then a
+        // blank line, then the text. Drop the address, and if the text looks like
+        // "Name: message", show Name in the white tag and the message in the black area.
+        var parts = bodyText.split("\n");
+        if (parts.length > 2 && parts[1] === "" && parts[0].indexOf(" ") === -1 && parts[0].indexOf(".") !== -1) {
+            parts.splice(0, 2);
+            bodyText = parts.join("\n");
+            var colon = bodyText.indexOf(": ");
+            if (colon > 0 && colon <= 80) {
+                var who = bodyText.substring(0, colon);
+                var toIdx = who.indexOf(" to ");
+                tag = toIdx > 0 ? who.substring(0, toIdx) : who;
+                bodyText = bodyText.substring(colon + 2);
+            }
+        }
 
         var timeoutMs = root.showSeconds * 1000;
         var t = Number(n.expireTimeout);
@@ -280,7 +327,7 @@ PluginComponent {
         banners.insert(0, {
             "key": root.keyOf(n),
             "tag": tag,
-            "body": stripMarkup(n.body),
+            "body": bodyText,
             "timeoutMs": timeoutMs,
             "critical": critical
         });
